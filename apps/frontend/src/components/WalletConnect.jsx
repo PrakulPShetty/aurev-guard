@@ -1,66 +1,75 @@
-// components/WalletConnect.jsx
-import { useState } from 'react';
-import { enableWallet, getUsedAddresses } from '../lib/cardano';
+import { useState } from "react";
+import { enableWallet, getUsedAddresses } from "../lib/cardano";
 
 export default function WalletConnect({ onConnect }) {
-  const [provider, setProvider] = useState(null);
-  const [address, setAddress] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | connecting | connected | error
-  const [err, setErr] = useState(null);
+  const [status, setStatus] = useState("idle");
+  const [address, setAddress] = useState("");
+  const [error, setError] = useState("");
 
   async function connect() {
-    setErr(null);
-    setStatus('connecting');
     try {
-      const { api, providerKey } = await enableWallet();
-      setProvider(api);
-      // attempt to fetch used addresses (hex)
-      const addrs = await getUsedAddresses(api);
-      const primary = addrs?.[0] ? addrs[0] : '';
+      setError("");
+      setStatus("connecting");
+
+      const { api, walletName } = await enableWallet();
+      const usedAddresses = await getUsedAddresses(api);
+
+      const primary = usedAddresses?.[0] || "";
       setAddress(primary);
-      setStatus('connected');
-      onConnect?.({ api, providerKey, address: primary });
-    } catch (e) {
-      setErr(e.message || String(e));
-      setStatus('error');
+
+      onConnect?.({
+        api,
+        address: primary,
+        walletName,
+      });
+
+      setStatus("connected");
+    } catch (err) {
+      setError(err.message || "Failed to connect");
+      setStatus("error");
     }
   }
 
   function disconnect() {
-    setProvider(null);
-    setAddress('');
-    setStatus('idle');
+    setStatus("idle");
+    setAddress("");
     onConnect?.(null);
   }
 
   return (
-    <div className="p-4 bg-white/60 dark:bg-slate-900 rounded-xl shadow-sm border">
+    <div className="p-4 border rounded-xl bg-white shadow">
       <h3 className="text-lg font-semibold mb-2">Wallet</h3>
-      <div className="flex items-center gap-3">
-        {status !== 'connected' ? (
+
+      {status !== "connected" ? (
+        <button
+          onClick={connect}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Connect Cardano Wallet
+        </button>
+      ) : (
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-600">Connected</p>
+            <p className="font-mono text-sm">{address}</p>
+          </div>
+
           <button
-            onClick={connect}
-            className="px-4 py-2 rounded-lg bg-sky-600 text-white hover:bg-sky-700 transition"
+            onClick={disconnect}
+            className="px-3 py-1 bg-red-500 text-white rounded-md"
           >
-            Connect Cardano Wallet
+            Disconnect
           </button>
-        ) : (
-          <>
-            <div className="flex-1">
-              <div className="text-sm text-slate-500">Connected ({provider?.name || 'CIP-30'})</div>
-              <div className="font-mono text-sm truncate">{address || '—'}</div>
-            </div>
-            <button
-              onClick={disconnect}
-              className="px-3 py-1 rounded-md bg-rose-500 text-white hover:bg-rose-600"
-            >
-              Disconnect
-            </button>
-          </>
-        )}
-      </div>
-      {err && <div className="text-xs text-rose-600 mt-2">Error: {err}</div>}
-      <div className="text-xs text-slate-400 mt-2">Works with CIP-30 wallets like Nami / Flint.</div>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-red-600 text-sm mt-2">Error: {error}</p>
+      )}
+
+      <p className="text-xs text-gray-500 mt-2">
+        Works with CIP-30 wallets like Nami / Flint.
+      </p>
     </div>
   );
 }
