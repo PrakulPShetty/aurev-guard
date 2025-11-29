@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 // Test all 5 API endpoints
 const BASE_URL = 'http://localhost:3000';
 
