@@ -1,3 +1,13 @@
+# AUREV Guard — Demo MVP
+
+This repository contains a simple demo for AUREV Guard (Cardano compliance prototype).
+
+Components:
+- `apps/backend` — Node/Express backend (port 3001)
+- `python-ai` — FastAPI AI stub (port 5000)
+- `apps/frontend` — React + Vite frontend (port 5173/5174)
+
+Follow the playbook in `demo-playbook.txt` to run locally.
 # AUREV Guard  
 Autonomous AI Compliance Agent on Cardano
 

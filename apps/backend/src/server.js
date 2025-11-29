@@ -1,5 +1,26 @@
 import express from 'express';
 import cors from 'cors';
+import routes from './routes.js';
+import config from './config/index.js';
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/', routes);
+
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+app.use((err, req, res, next) => {
+  console.error('Server error', err && err.stack ? err.stack : err);
+  res.status(500).json({ error: 'internal_server_error' });
+});
+
+const PORT = config.PORT || 3001;
+app.listen(PORT, () => console.log(`Backend listening on http://localhost:${PORT}`));
+import express from 'express';
+import cors from 'cors';
 import { config } from './config/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import scanRoutes from './routes/scan.js';
